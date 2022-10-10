@@ -13,10 +13,9 @@ var addr = ""
 func main() {
 	router := gin.Default()
 	router.LoadHTMLGlob("templates/*")
-	target_url := fmt.Sprintf("https://%s:35212/", get_external())
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{
-			"title": target_url,
+			"title": fmt.Sprintf("https://%s:35212/", get_external()),
 		})
 	})
 
