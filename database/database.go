@@ -17,7 +17,7 @@ type Singleton struct {
 
 
 var once sync.Once
-var db  *Singleton
+var db  *mongo.Client
 
 func useDatabase () *mongo.Client{
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)
@@ -36,11 +36,14 @@ func useDatabase () *mongo.Client{
 
 
 
-func GetDB() *Singleton {
-	once.Do(func() {
-		db = &Singleton{
-			db:useDatabase(),
-		}
-	})
+func GetDB() *mongo.Client {
+	// once.Do(func() {
+	// 	db = &Singleton{
+	// 		db:useDatabase(),
+	// 	}
+	// })
+	if db ==nil {
+		db = useDatabase()
+	}
 	return db
 }

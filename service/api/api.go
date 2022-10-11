@@ -1,14 +1,17 @@
 package api
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"web/database"
+
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
-
-
 
 func GetApi() {
 	router := gin.Default()
@@ -19,9 +22,21 @@ func GetApi() {
 		})
 	})
 
-	router.GET("/ip", func(c *gin.Context)  {
-	database.GetDB()
-		c.JSONP(http.StatusOK, c.RemoteIP())
+	router.GET("/ip", func(c *gin.Context) {
+		coll := database.GetDB().Database("test").Collection("IOC_data")
+		var result bson.M
+		err := coll.FindOne(context.TODO(), bson.D{{Key: "test",Value:  "test"}}).Decode(&result)
+		if err == mongo.ErrNoDocuments {
+			fmt.Printf("No document was found with the title %s\n", "title")
+			return
+		}
+		if err != nil {
+			panic(err)
+		}
+		// coll.InsertOne(context.TODO(),bson.D{{Key: "test",Value: "test"},{Key: "test2",Value: "test2"}})
+		jsonData, err := json.MarshalIndent(result, "", "    ")
+		fmt.Printf("%s\n", jsonData)
+		c.JSONP(http.StatusOK, result)
 	})
 
 	router.Run(":8080")
