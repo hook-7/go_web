@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +11,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+type LoginForm struct {
+	user     string `form:"user" binding:"required"`
+	pwd string `form:"password" binding:"required"`
+}
 
 func GetApi() {
 	router := gin.Default()
@@ -25,7 +29,12 @@ func GetApi() {
 	router.GET("/ip", func(c *gin.Context) {
 		coll := database.GetDB().Database("test").Collection("IOC_data")
 		var result bson.M
-		err := coll.FindOne(context.TODO(), bson.D{{Key: "test",Value:  "test"}}).Decode(&result)
+		err := coll.FindOne(context.TODO(), bson.D{{Key: "test", Value: "test"}}).Decode(&result)
+		cursor, err := coll.Find(context.TODO(), bson.D{{Key: "test", Value: "test"}})
+		var results []bson.M
+		if err = cursor.All(context.TODO(), &results); err != nil {
+			panic(err)
+		}
 		if err == mongo.ErrNoDocuments {
 			fmt.Printf("No document was found with the title %s\n", "title")
 			return
@@ -34,12 +43,23 @@ func GetApi() {
 			panic(err)
 		}
 		// coll.InsertOne(context.TODO(),bson.D{{Key: "test",Value: "test"},{Key: "test2",Value: "test2"}})
-		jsonData, err := json.MarshalIndent(result, "", "    ")
-		fmt.Printf("%s\n", jsonData)
-		c.JSONP(http.StatusOK, result)
+
+		c.JSONP(http.StatusOK, results)
 	})
 
-	router.Run(":8080")
+	router.POST("/login", func(c *gin.Context) {
+		param := make(map[string]interface{})
+		err := c.BindJSON(&param)
+			fmt.Println(param)
+			fmt.Println(param["pwd"])
+			if err != nil {
+				return 
+			}
+
+	
+	})
+
+	router.Run(":8081")
 }
 
 func get_external() string {

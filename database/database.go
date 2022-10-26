@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,8 +14,8 @@ type Singleton struct {
 	db *mongo.Client
 }
 
-
-var once sync.Once
+//异步懒汉模式
+// var once sync.Once 
 var db  *mongo.Client
 
 func useDatabase () *mongo.Client{
@@ -30,7 +29,7 @@ func useDatabase () *mongo.Client{
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("!!!!!~~~~~~~~~")
+	fmt.Println("link database ok!")
 	return client
 }
 
