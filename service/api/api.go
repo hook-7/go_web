@@ -1,9 +1,12 @@
 package api
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"web/database"
 
@@ -69,5 +72,34 @@ func get_external() string {
 	}
 	defer resp.Body.Close()
 	content, _ := io.ReadAll(resp.Body)
+	updateDns()
 	return string(content)
 }
+
+func updateDns() {
+	url := "https://api.cloudflare.com/client/v4/zones/bf2b8a3249fd02ec38d9f9eb17fe1e37/dns_records/c30054c61bf1a6d9db6d053667b8f821"
+    payload := make(map[string]interface {})
+	payload["content"] = "66.150.128.82"
+	payload["name"] = "test"
+	payload["proxied"] = true
+	payload["proxiable"] = true
+	payload["ttl"] = 1
+	payload["type"] = "A"
+	marshal, _ := json.Marshal(payload)
+	reader := bytes.NewReader(marshal)
+	req, _ := http.NewRequest("PUT", url, reader)
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("X-Auth-Email", "war7ng@qq.com")
+	req.Header.Add("X-Auth-Key","45aac82ead6b0e6df93fed2bcfaf54ad74412")
+
+	res, _ := http.DefaultClient.Do(req)
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	fmt.Println(res)
+	fmt.Println(string(body))
+	
+}
+
+
